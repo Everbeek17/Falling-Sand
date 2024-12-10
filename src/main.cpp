@@ -1,21 +1,43 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/OpenGL.hpp>
+#include <iostream>
+
+#include "gameLogic/gameLogic.h"
+#include "boilerPlate/boilerPlateCode.h"
+#include "debug/DebugFunctions.h"
 
 int main()
 {
-    auto window = sf::RenderWindow({1920u, 1080u}, "CMake SFML Project");
-    window.setFramerateLimit(144);
+    auto window = sf::RenderWindow({1080u, 720u}, "Falling Sand");
+    setupWindow(window);
+    initializeGameLogic(window);
 
-    while (window.isOpen())
+    // run the main loop
+    // The program already limits the amount of times this loop fires
+    // to 60 times per second. 
+    // (This is done by calling window.setFramerateLimit(60))
+    bool running = true;
+    while (running)
     {
-        for (auto event = sf::Event(); window.pollEvent(event);)
+        sf::Event event;
+        while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
-            {
-                window.close();
-            }
+            handleEvent(event, window, running);
         }
+        // clear the window with a blue color
+        window.clear(sf::Color::Black);
 
-        window.clear();
+        // ticks the game by one frame
+        gametick(running);
+
+
+        // end the current frame (internally swaps the front and back buffers).
+        // (Takes whatever was drawn to the current "back" buffer and displays 
+        //  it on the screen.)
         window.display();
     }
+
+    // release resources...
+
+    return 0;
 }

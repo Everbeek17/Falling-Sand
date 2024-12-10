@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(CMakeSFMLProject LANGUAGES CXX)
+project(FallingSandProject LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -13,7 +13,19 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp)
+# Add my new files
+include_directories(
+    src/gameLogic
+    src/boilerPlate
+    src/debug)
+
+# Lists all the .cpp files
+add_executable(main 
+    src/main.cpp
+    src/gameLogic/gameLogic.cpp
+    src/boilerPlate/boilerPlateCode.cpp
+    src/debug/windowFunctions.cpp)
+    
 target_link_libraries(main PRIVATE sfml-graphics)
 target_compile_features(main PRIVATE cxx_std_17)
 

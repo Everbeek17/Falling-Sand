@@ -17,7 +17,7 @@ void print_window_settings(const sf::Window& window) {
 
 sf::Font font;
 void initialize_debug() {
-  if (!font.openFromFile("../../../assets/Roboto-Regular.ttf")) {
+  if (!font.openFromFile("../../assets/Roboto-Regular.ttf")) {
     std::cerr << "Could not load font file" << std::endl;
     return;
   }

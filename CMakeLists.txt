@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
-project(CMakeSFMLProject LANGUAGES CXX)
+project(FallingSand LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -12,6 +12,23 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp)
-target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics)
+# Add my directories
+include_directories(
+    src/game
+    src/debug)
+
+# Lists all the .cpp files
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+    src/game/game_logic.cpp
+    src/game/window_logic.cpp
+    src/debug/timer_functions.cpp
+    src/debug/window_functions.cpp)
+
+# Set additional compiler definitions for debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE DEBUG)
+endif()
+
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_link_libraries(${PROJECT_NAME} PRIVATE SFML::Graphics)

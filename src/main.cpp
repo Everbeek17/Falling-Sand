@@ -1,9 +1,9 @@
 #include <SFML/Graphics.hpp>
 
-#include "game/gameLogic.h"
-#include "game/windowLogic.h"
+#include "game/game_logic.h"
+#include "game/window_logic.h"
 #ifdef DEBUG
-#include "debug/debugFunctions.h"
+#include "debug/debug_functions.h"
 #include <string>
 #endif
 

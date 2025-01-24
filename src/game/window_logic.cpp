@@ -3,51 +3,23 @@
 #include "game_logic.h"
 #include "window_logic.h"
 
-float play_area_width_pixels;
-float block_width_pixels;
-float play_area_start_x;
-float play_area_start_y;
-bool is_mouse_down_left;
-
-/* UI Elements */
-sf::RectangleShape play_area(sf::Vector2f(0.0f, 0.0f));
-sf::RectangleShape** play_area_rectangles;
+bool is_mouse_down_left = false;
+BlockMap block_map({PLAY_AREA_WIDTH_BLOCKS, PLAY_AREA_WIDTH_BLOCKS});
 
 void initialize_window(sf::RenderWindow& window)
 {
-  window.setFramerateLimit(MAX_FRAME_RATE);
-  // window.setVerticalSyncEnabled(true);
-
-  play_area.setFillColor(sf::Color::Black);
-
-  // reserve memory for and instantiate the 2d array of block rectangles
-  play_area_rectangles = new sf::RectangleShape*[PLAY_AREA_WIDTH_BLOCKS];
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
+  // WARNING: can either set max frame rate or vertical sync, not both
+  if (USE_VSYNC)
   {
-    play_area_rectangles[x_idx] = new sf::RectangleShape[PLAY_AREA_WIDTH_BLOCKS];
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
-    {
-      play_area_rectangles[x_idx][y_idx] = sf::RectangleShape(sf::Vector2f(0, 0));
-    }
+    window.setVerticalSyncEnabled(true);
+  }
+  else
+  {
+    window.setFramerateLimit(MAX_FRAME_RATE);
   }
 
-  // resize the play area and the block rectangles to fit the current window
+  // resize the play area to fit the current window
   resize_play_area(window);
-}
-
-void cleanup_window()
-{
-  // delete the 2d array of block rectangles
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
-  {
-    delete[] play_area_rectangles[x_idx];
-  }
-  delete[] play_area_rectangles;
-}
-
-void initialize_controls()
-{
-  is_mouse_down_left = false;
 }
 
 void handle_user_input(sf::RenderWindow& window)
@@ -58,89 +30,74 @@ void handle_user_input(sf::RenderWindow& window)
     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
     // check if the mouse's position is inside the play area
-    if (play_area.getGlobalBounds().contains(sf::Vector2f(mousePos)))
+    sf::FloatRect play_area = block_map.get_bounding_box();
+    if (play_area.contains(sf::Vector2f(mousePos)))
     {
+      float block_width_pixels = play_area.size.x / PLAY_AREA_WIDTH_BLOCKS;
+      float block_height_pixels = play_area.size.y / PLAY_AREA_WIDTH_BLOCKS;
       // convert the mouse position from pixel coordinates to block coordinates
-      int block_x = (mousePos.x - play_area_start_x) / block_width_pixels;
-      int block_y = (play_area_width_pixels - (mousePos.y - play_area_start_y)) / block_width_pixels;
+      int block_x = (mousePos.x - play_area.position.x) / block_width_pixels;
+      int block_y = (play_area.size.y - (mousePos.y - play_area.position.y)) / block_height_pixels;
 
       // convert the particle at the mouse's position to a sand particle
-     set_particle(block_x, block_y, ParticleType::SAND);
+     convert_particle(block_x, block_y, ParticleType::SAND);
     }
   }
 }
 
+// (currently the play area is set as a window-centered square)
 void resize_play_area(sf::RenderWindow& window)
 {
   // get the window's current dimensions
   const sf::Vector2u window_size = window.getSize();
-  unsigned int width = window_size.x;
-  unsigned int height = window_size.y;
+  unsigned int window_width = window_size.x;
+  unsigned int window_height = window_size.y;
 
-  // calculate the dimensions of the play area
-  // (the play area is a square that is centered in the window)
-  if (width >= height)
-  {
-    play_area_width_pixels = height;
-    play_area_start_x = (width - play_area_width_pixels) / 2;
-    play_area_start_y = 0;
-  }
-  else
-  {
-    play_area_width_pixels = width;
-    play_area_start_x = 0;
-    play_area_start_y = (height - play_area_width_pixels) / 2;
-  }
-  block_width_pixels = play_area_width_pixels / PLAY_AREA_WIDTH_BLOCKS;
-  
-  // update the play area rectangle object
-  play_area.setPosition({play_area_start_x, play_area_start_y});
-  play_area.setSize(sf::Vector2f(play_area_width_pixels, play_area_width_pixels));
+  sf::Vector2f play_area_size;
+  sf::Vector2f play_area_position;
 
-  // update the block rectangle objects
-  float x, y;
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
-  {
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
-    {
-      x = play_area_start_x + (x_idx * block_width_pixels);
-      y = play_area_start_y + play_area_width_pixels - ((y_idx+1) * block_width_pixels);
+  play_area_size.x = std::min(window_width, window_height);
+  play_area_size.y = play_area_size.x;
 
-      play_area_rectangles[x_idx][y_idx].setPosition({x, y});
-      play_area_rectangles[x_idx][y_idx].setSize(sf::Vector2f(block_width_pixels, block_width_pixels));
-    }
-  }
+  play_area_position.x = 
+      std::max(0.0f, (window_width - play_area_size.x) / 2.0f);
+  play_area_position.y = 
+      std::max(0.0f, (window_height - play_area_size.y) / 2.0f);
+
+  // update the block map object
+  block_map.resize(play_area_size);
+  block_map.setPosition(play_area_position);
 }
 
 void handle_drawing(sf::RenderWindow& window)
 {
-  // clears the window with a grey color
-  window.clear(sf::Color(50, 50, 50));
-
-  // draws the blank play area
-  window.draw(play_area);
+  // clears the window to the background color
+  window.clear(BACKGROUND_COLOR);
 
   // gets the array of particle types
- ParticleType** block_types = get_particle_grid();
+  ParticleType** block_types = get_particle_grid();
 
-  // iterates over each particle and draws it
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
+  // resets all blocks in the map to the default color
+  block_map.set_all_block_colors(DEFAULT_BLOCK_COLOR);
+
+  // iterates over each particle and updates its color in BlockMap accordingly
+  for (unsigned int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
   {
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
+    for (unsigned int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
     {
-      // sets the color of the particle based on its type
       switch (block_types[x_idx][y_idx])
       {
         case ParticleType::SAND:
-          play_area_rectangles[x_idx][y_idx].setFillColor(sf::Color::Yellow);
+          block_map.set_block_color({x_idx, y_idx}, SAND_COLOR);
         break;
         default:
-          play_area_rectangles[x_idx][y_idx].setFillColor(sf::Color::Black);
+          // block_map.set_block_color({x_idx, y_idx}, DEFAULT_BLOCK_COLOR);
         break;
       }
-      window.draw(play_area_rectangles[x_idx][y_idx]);
     }
   }
+  // Draws the BlockMap
+  window.draw(block_map);
 }
 
 void handle_window_event(const std::optional<sf::Event> event, sf::RenderWindow &window, bool &running)
@@ -160,7 +117,7 @@ void handle_window_event(const std::optional<sf::Event> event, sf::RenderWindow 
     resize_play_area(window);
   }
 
-  // Mouse Events
+  /* Mouse Events */
   else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
   {
     switch (mouseButtonPressed->button)
@@ -186,7 +143,7 @@ void handle_window_event(const std::optional<sf::Event> event, sf::RenderWindow 
     }
   }
 
-  // Keyboard Events
+  /* Keyboard Events */
   else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
   {
     switch (keyPressed->scancode)

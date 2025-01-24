@@ -16,6 +16,6 @@ void initialize_game();
 void cleanup_game();
 void handle_physics();
 void reset_grid();
-void set_particle(int block_x, int block_y, ParticleType particle_type);
+void convert_particle(int block_x, int block_y, ParticleType particle_type);
 
 #endif

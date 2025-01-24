@@ -28,7 +28,7 @@ void draw_text_to_window(sf::RenderWindow& window, const std::string& text, cons
   sf::Text display_text(font, text, CHARACTER_SIZE);
   display_text.setFillColor(sf::Color::White);
   display_text.setStyle(sf::Text::Bold);
-  display_text.setPosition({play_area_start_x + CHARACTER_SIZE, play_area_start_y + (CHARACTER_SIZE * line_number-1)});
+  display_text.setPosition({5.0f, 5.0f + CHARACTER_SIZE * (line_number-1)});
 
   window.draw(display_text);
 }

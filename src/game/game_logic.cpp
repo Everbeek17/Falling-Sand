@@ -106,7 +106,7 @@ void handle_physics()
 }
 
 // converts the particle at the specified block to the specified type
-void set_particle(int block_x, int block_y, ParticleType particle_type)
+void convert_particle(int block_x, int block_y, ParticleType particle_type)
 {
   particle_grid_curr[block_x][block_y] = particle_type;
 }

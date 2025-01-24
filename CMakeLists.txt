@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME}
     src/main.cpp
     src/game/game_logic.cpp
     src/game/window_logic.cpp
+    src/game/block_map.cpp
     src/debug/timer_functions.cpp
     src/debug/window_functions.cpp)
 

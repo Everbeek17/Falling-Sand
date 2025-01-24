@@ -63,6 +63,7 @@ void handle_physics()
           // if below is air, move down
           else if (particle_grid_curr[x_idx][y_idx-1] == ParticleType::AIR)
           {
+            particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
             particle_grid_next[x_idx][y_idx-1] = ParticleType::SAND;
           }
           // if below is not air 
@@ -71,11 +72,13 @@ void handle_physics()
             // if below and to the right is air, move down and to the right
             if (x_idx < PLAY_AREA_WIDTH_BLOCKS - 1 && particle_grid_curr[x_idx+1][y_idx-1] == ParticleType::AIR)
             {
+              particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
               particle_grid_next[x_idx+1][y_idx-1] = ParticleType::SAND;
             }
             // else if below and to the left is air, move down and to the left
             else if (x_idx > 0 && particle_grid_curr[x_idx-1][y_idx-1] == ParticleType::AIR)
             {
+              particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
               particle_grid_next[x_idx-1][y_idx-1] = ParticleType::SAND;
             }
             // else stay put

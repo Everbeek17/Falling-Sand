@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "game/game_logic.h"
+#include "game/ui_logic.h"
 #include "game/window_logic.h"
 #ifdef DEBUG
 #include "debug/debug_functions.h"

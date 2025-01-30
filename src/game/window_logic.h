@@ -32,9 +32,9 @@ private:
 
 /* Functions */
 void initialize_window(sf::RenderWindow& window);
+sf::FloatRect get_play_area_bounds();
 void resize_play_area(sf::RenderWindow& window);
 void handle_window_event(const std::optional<sf::Event> event, sf::RenderWindow &window, bool &running);
-void handle_user_input(sf::RenderWindow& window);
 void handle_drawing(sf::RenderWindow& window);
 
 #endif

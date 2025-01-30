@@ -1,9 +1,11 @@
 #include <SFML/Graphics.hpp>
 
 #include "game_logic.h"
+#include "ui_logic.h"
 #include "window_logic.h"
 
-bool is_mouse_down_left = false;
+void draw_particles(sf::RenderWindow& window);
+
 BlockMap block_map({PLAY_AREA_WIDTH_BLOCKS, PLAY_AREA_WIDTH_BLOCKS});
 
 void initialize_window(sf::RenderWindow& window)
@@ -22,27 +24,9 @@ void initialize_window(sf::RenderWindow& window)
   resize_play_area(window);
 }
 
-void handle_user_input(sf::RenderWindow& window)
+sf::FloatRect get_play_area_bounds()
 {
-  if (is_mouse_down_left)
-  {
-    // get the mouse position
-    sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-
-    // check if the mouse's position is inside the play area
-    sf::FloatRect play_area = block_map.get_bounding_box();
-    if (play_area.contains(sf::Vector2f(mousePos)))
-    {
-      float block_width_pixels = play_area.size.x / PLAY_AREA_WIDTH_BLOCKS;
-      float block_height_pixels = play_area.size.y / PLAY_AREA_WIDTH_BLOCKS;
-      // convert the mouse position from pixel coordinates to block coordinates
-      int block_x = (mousePos.x - play_area.position.x) / block_width_pixels;
-      int block_y = (play_area.size.y - (mousePos.y - play_area.position.y)) / block_height_pixels;
-
-      // convert the particle at the mouse's position to a sand particle
-     convert_particle(block_x, block_y, ParticleType::SAND);
-    }
-  }
+  return block_map.get_bounding_box();
 }
 
 // (currently the play area is set as a window-centered square)
@@ -74,6 +58,13 @@ void handle_drawing(sf::RenderWindow& window)
   // clears the window to the background color
   window.clear(BACKGROUND_COLOR);
 
+  draw_particles(window);
+
+  draw_ui(window);
+}
+
+void draw_particles(sf::RenderWindow& window)
+{
   // gets the array of particle types
   ParticleType** block_types = get_particle_grid();
 
@@ -118,39 +109,18 @@ void handle_window_event(const std::optional<sf::Event> event, sf::RenderWindow 
   }
 
   /* Mouse Events */
-  else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
+  else if (const auto* mouse_button_pressed = event->getIf<sf::Event::MouseButtonPressed>())
   {
-    switch (mouseButtonPressed->button)
-    {
-      case sf::Mouse::Button::Left:
-        if (!is_mouse_down_left) {
-          is_mouse_down_left = true;
-        }
-      break;
-      case sf::Mouse::Button::Right:
-      break;
-    }
+    handle_mouse_button_pressed(mouse_button_pressed);
   }
-  else if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
+  else if (const auto* mouse_button_released = event->getIf<sf::Event::MouseButtonReleased>())
   {
-    switch (mouseButtonReleased->button)
-    {
-      case sf::Mouse::Button::Left:
-        is_mouse_down_left = false;
-      break;
-      case sf::Mouse::Button::Right:
-      break;
-    }
+    handle_mouse_button_released(mouse_button_released);
   }
 
   /* Keyboard Events */
-  else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
+  else if (const auto* key_pressed = event->getIf<sf::Event::KeyPressed>())
   {
-    switch (keyPressed->scancode)
-    {
-      case sf::Keyboard::Scan::Escape:
-        running = false;
-      break;
-    }
+    handle_key_pressed(key_pressed, running);
   }
 }

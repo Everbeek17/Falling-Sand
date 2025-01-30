@@ -33,7 +33,6 @@ int main()
   std::string fps_str = "FPS: " + std::to_string(0);
 
   Timer running_avg_timer = Timer();
-  const float running_avg_interval = 0.5;
   int running_avg_frame_count = 0;
 
   running_avg_timer.start();
@@ -78,7 +77,7 @@ int main()
     running_avg_frame_count++;
 
     running_avg_timer.stop();
-    if (running_avg_timer.get_elapsed_time() > running_avg_interval)
+    if (running_avg_timer.get_elapsed_time() > DEBUG_DISPLAY_INTERVAL_DURATION)
     {
       float running_avg_physics = physics_running_total / running_avg_frame_count;
       physics_running_total = 0;

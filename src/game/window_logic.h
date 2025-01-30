@@ -4,9 +4,9 @@
 #include <SFML/Graphics.hpp>
 
 /* Constants */
-const unsigned int PLAY_AREA_WIDTH_BLOCKS = 200;
-const bool USE_VSYNC = false;
-const unsigned int MAX_FRAME_RATE = 60;
+#define PLAY_AREA_WIDTH_BLOCKS 200
+#define USE_VSYNC false
+#define MAX_FRAME_RATE 60
 
 const sf::Color BACKGROUND_COLOR = sf::Color(50, 50, 50);
 const sf::Color DEFAULT_BLOCK_COLOR = sf::Color::Black;

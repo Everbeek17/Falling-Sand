@@ -6,6 +6,9 @@
 #include <SFML/Graphics.hpp>
 #include <chrono>
 
+/* Constants */
+#define DEBUG_DISPLAY_INTERVAL_DURATION 0.5
+
 class Timer {
 public:
 	Timer();

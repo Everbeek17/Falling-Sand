@@ -1,10 +1,12 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 #include "game_logic.h"
 #include "ui_logic.h"
 #include "window_logic.h"
 
 bool is_mouse_down_left = false;
+int brush_size = 3;
 
 void handle_user_input(sf::RenderWindow& window)
 {
@@ -17,14 +19,34 @@ void handle_user_input(sf::RenderWindow& window)
     sf::FloatRect play_area = get_play_area_bounds();
     if (play_area.contains(sf::Vector2f(mousePos)))
     {
-      float block_width_pixels = play_area.size.x / PLAY_AREA_WIDTH_BLOCKS;
-      float block_height_pixels = play_area.size.y / PLAY_AREA_WIDTH_BLOCKS;
+      const float block_width_pixels = 
+          play_area.size.x / PLAY_AREA_WIDTH_BLOCKS;
+      const float block_height_pixels = 
+          play_area.size.y / PLAY_AREA_WIDTH_BLOCKS;
+
+      // Error checking
+      if (brush_size < 1)
+      {
+        std::cerr << "Error: brush size must be at least 1" << std::endl;
+        brush_size = 1;
+      }
       // convert the mouse position from pixel coordinates to block coordinates
       int block_x = (mousePos.x - play_area.position.x) / block_width_pixels;
       int block_y = (play_area.size.y - (mousePos.y - play_area.position.y)) / block_height_pixels;
 
-      // convert the particle at the mouse's position to a sand particle
-     convert_particle(block_x, block_y, ParticleType::SAND);
+      for (int x_offset = -(brush_size-1); x_offset <= brush_size-1; x_offset++){
+        if (block_x + x_offset < 0 || block_x + x_offset >= PLAY_AREA_WIDTH_BLOCKS){
+          continue;
+        }
+        
+        for (int y_offset = -(brush_size-1); y_offset <= brush_size-1; y_offset++)  
+        {
+          if (block_y + y_offset < 0 || block_y + y_offset >= PLAY_AREA_WIDTH_BLOCKS){
+            continue;
+          }
+          convert_particle(block_x + x_offset, block_y + y_offset, ParticleType::SAND);
+        }
+      }
     }
   }
 }

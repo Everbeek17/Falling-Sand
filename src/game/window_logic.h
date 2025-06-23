@@ -8,8 +8,9 @@
 #define USE_VSYNC false
 #define MAX_FRAME_RATE 60
 
-const sf::Color BACKGROUND_COLOR = sf::Color(50, 50, 50);
+const sf::Color BACKGROUND_COLOR = sf::Color(50, 50, 50); // Dark gray
 const sf::Color DEFAULT_BLOCK_COLOR = sf::Color::Black;
+const sf::Color WALL_COLOR = sf::Color(255, 192, 203); // Pink
 const sf::Color SAND_COLOR = sf::Color::Yellow;
 const sf::Color WATER_COLOR = sf::Color::Blue;
 

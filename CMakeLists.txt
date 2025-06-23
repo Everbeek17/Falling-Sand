@@ -21,6 +21,7 @@ include_directories(
 add_executable(${PROJECT_NAME}
     src/main.cpp
     src/game/game_logic.cpp
+    src/game/particle_grid.cpp
     src/game/ui_logic.cpp
     src/game/window_logic.cpp
     src/game/block_map.cpp

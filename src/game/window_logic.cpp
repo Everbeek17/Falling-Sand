@@ -65,8 +65,8 @@ void handle_drawing(sf::RenderWindow& window)
 
 void draw_particles(sf::RenderWindow& window)
 {
-  // gets the array of particle types
-  ParticleType** block_types = get_particle_grid();
+  // gets the grid of current screen blocks
+  Particle_Grid block_types = get_particle_grid();
 
   // resets all blocks in the map to the default color
   block_map.set_all_block_colors(DEFAULT_BLOCK_COLOR);
@@ -76,7 +76,7 @@ void draw_particles(sf::RenderWindow& window)
   {
     for (unsigned int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
     {
-      switch (block_types[x_idx][y_idx])
+      switch (block_types.at(x_idx, y_idx))
       {
         case ParticleType::SAND:
           block_map.set_block_color({x_idx, y_idx}, SAND_COLOR);
@@ -84,8 +84,11 @@ void draw_particles(sf::RenderWindow& window)
         case ParticleType::WATER:
           block_map.set_block_color({x_idx, y_idx}, WATER_COLOR);
         break;
+        case ParticleType::WALL:
+          block_map.set_block_color({x_idx, y_idx}, WALL_COLOR);
+        break;
         default:
-          // block_map.set_block_color({x_idx, y_idx}, DEFAULT_BLOCK_COLOR);
+          block_map.set_block_color({x_idx, y_idx}, DEFAULT_BLOCK_COLOR);
         break;
       }
     }

@@ -1,127 +1,101 @@
 #include "game_logic.h"
 #include "window_logic.h"
 
-// 2D arrays of particle types
-ParticleType** particle_grid_curr;
-ParticleType** particle_grid_next;
+void make_pass(int x_idx_start, int y_idx_start, int x_idx_end, int y_idx_end);
+void handle_two_by_two_neighbourhood(int x_idx_start, int y_idx_start);
+void resolve_neighbourhood(Neighbourhood_Key& neighbourhood);
 
-ParticleType** get_particle_grid() {
-  return particle_grid_next;
+// 2D array of particle types
+Particle_Grid particle_grid;
+
+Particle_Grid& get_particle_grid() {
+  return particle_grid;
 }
 
 void initialize_game()
 {
-  // initialize the particle grids
-  particle_grid_curr = new ParticleType*[PLAY_AREA_WIDTH_BLOCKS];
-  particle_grid_next = new ParticleType*[PLAY_AREA_WIDTH_BLOCKS];
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
-  {
-    particle_grid_curr[x_idx] = new ParticleType[PLAY_AREA_WIDTH_BLOCKS];
-    particle_grid_next[x_idx] = new ParticleType[PLAY_AREA_WIDTH_BLOCKS];
-    // initially fill the current grid with air particles
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
-    {
-      particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
-    }
-  }
+  // Initializes the particle grid with AIR particles
+  particle_grid = Particle_Grid(PLAY_AREA_WIDTH_BLOCKS, PLAY_AREA_WIDTH_BLOCKS, ParticleType::AIR);
 }
 
-void cleanup_game()
-{
-  // delete the particle grids
-  for (int i = 0; i < PLAY_AREA_WIDTH_BLOCKS; i++)
-  {
-    delete[] particle_grid_curr[i];
-    delete[] particle_grid_next[i];
-  }
-  delete[] particle_grid_curr;
-  delete[] particle_grid_next;
-}
+// void cleanup_game()
+// {
+
+// }
 
 void handle_physics()
 {
-  // iterate over every block in the current grid 
-  // use it to update the next grid
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
+  // We do this in four passes (kinda like Margolus neighbourhoods)
+  // Pass One:
+  int x_idx_start = -1;
+  int y_idx_start = -1;
+  make_pass(x_idx_start, y_idx_start, PLAY_AREA_WIDTH_BLOCKS,PLAY_AREA_WIDTH_BLOCKS);
+  // Pass Two:
+  x_idx_start = 0;
+  y_idx_start = -1;
+  make_pass(x_idx_start, y_idx_start, PLAY_AREA_WIDTH_BLOCKS,PLAY_AREA_WIDTH_BLOCKS);
+  // Pass Three:
+  x_idx_start = -1;
+  y_idx_start = 0;
+  make_pass(x_idx_start, y_idx_start, PLAY_AREA_WIDTH_BLOCKS,PLAY_AREA_WIDTH_BLOCKS);
+  // Pass Four:
+  x_idx_start = 0;
+  y_idx_start = 0;
+  make_pass(x_idx_start, y_idx_start, PLAY_AREA_WIDTH_BLOCKS, PLAY_AREA_WIDTH_BLOCKS);
+}
+
+// iterates over each 2x2 neighbourhood of blocks.
+// if the working width is an odd number of blocks we do not need to program in
+// an edge case because under the hood the particle grid is padded with WALL
+// blocks.
+void make_pass(int x_idx_start, int y_idx_start, int x_idx_end, int y_idx_end)
+{
+  for (int x_idx = x_idx_start; x_idx < x_idx_end; x_idx += 2)
   {
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
+    for (int y_idx = y_idx_start; y_idx  < y_idx_end; y_idx += 2)
     {
-      switch (particle_grid_curr[x_idx][y_idx])
-      {
-        case ParticleType::SAND:
-          // attempt to move the sand particle down by one block.
-          // if the block below is not an air block, then
-          // attempt to move down and to the right.
-          // if no space down and to the right attempt down and to the left.
-          // if no space down and to the left then leave block where it is.
-          
-          // if at bottom of screen, stay put
-          if (y_idx == 0)
-          {
-            particle_grid_next[x_idx][y_idx] = ParticleType::SAND;
-          }
-          // if below is air, move down
-          else if (particle_grid_curr[x_idx][y_idx-1] == ParticleType::AIR)
-          {
-            particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
-            particle_grid_next[x_idx][y_idx-1] = ParticleType::SAND;
-          }
-          // if below is not air 
-          else
-          {
-            // if below and to the right is air, move down and to the right
-            if (x_idx < PLAY_AREA_WIDTH_BLOCKS - 1 && particle_grid_curr[x_idx+1][y_idx-1] == ParticleType::AIR)
-            {
-              particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
-              particle_grid_next[x_idx+1][y_idx-1] = ParticleType::SAND;
-            }
-            // else if below and to the left is air, move down and to the left
-            else if (x_idx > 0 && particle_grid_curr[x_idx-1][y_idx-1] == ParticleType::AIR)
-            {
-              particle_grid_curr[x_idx][y_idx] = ParticleType::AIR;
-              particle_grid_next[x_idx-1][y_idx-1] = ParticleType::SAND;
-            }
-            // else stay put
-            else
-            {
-              particle_grid_next[x_idx][y_idx] = ParticleType::SAND;
-            }
-          }
-          break;
-      }
+      handle_two_by_two_neighbourhood(x_idx, y_idx);
     }
   }
+}
 
-  // Fill the remaining spots in the next grid with Air
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
-  {
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
-    {
-      if (particle_grid_next[x_idx][y_idx] == ParticleType::EMPTY)
-      {
-        particle_grid_next[x_idx][y_idx] = ParticleType::AIR;
-      }
+// given a full 2x2
+void handle_two_by_two_neighbourhood(int x_idx_start, int y_idx_start)
+{
+  // get the two-by-two neighbourhood of blocks
+  Neighbourhood_Key neighbourhood = particle_grid.get_neighbourhood_key(x_idx_start, y_idx_start);
+  // then calculate the next state of the neighbourhood
+  // TODO: replace with a lookup table
+  resolve_neighbourhood(neighbourhood);
+  // then apply the new state to the particle grid
+  particle_grid.apply_neighbourhood(neighbourhood, x_idx_start, y_idx_start);
+}
+
+void resolve_neighbourhood(Neighbourhood_Key& neighbourhood)
+{
+  if (neighbourhood[0] == ParticleType::SAND) {
+    if (neighbourhood[2] == ParticleType::AIR) {
+      neighbourhood[2] = ParticleType::SAND;
+      neighbourhood[0] = ParticleType::AIR;
+    } else if  (neighbourhood[3] == ParticleType::AIR) {
+      neighbourhood[3] = ParticleType::SAND;
+      neighbourhood[0] = ParticleType::AIR;
+    }
+  }
+  if (neighbourhood[1] == ParticleType::SAND) {
+    if (neighbourhood[3] == ParticleType::AIR) {
+      neighbourhood[3] = ParticleType::SAND;
+      neighbourhood[1] = ParticleType::AIR;
+    } else if  (neighbourhood[2] == ParticleType::AIR) {
+      neighbourhood[2] = ParticleType::SAND;
+      neighbourhood[1] = ParticleType::AIR;
     }
   }
 }
 
 // converts the particle at the specified block to the specified type
+// this is used for the brush tool in the UI
 void convert_particle(int block_x, int block_y, ParticleType particle_type)
 {
-  particle_grid_curr[block_x][block_y] = particle_type;
-}
-
-// swaps the current grid with the next grid, AND resets the next grid 
-void reset_grid() {
-  void* temp = particle_grid_curr;
-  particle_grid_curr = particle_grid_next;
-  particle_grid_next = (ParticleType**)temp;
-
-  for (int x_idx = 0; x_idx < PLAY_AREA_WIDTH_BLOCKS; x_idx++)
-  {
-    for (int y_idx = 0; y_idx < PLAY_AREA_WIDTH_BLOCKS; y_idx++)
-    {
-      particle_grid_next[x_idx][y_idx] = ParticleType::EMPTY;
-    }
-  }
+  particle_grid.at(block_x, block_y) = particle_type;
 }

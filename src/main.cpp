@@ -102,18 +102,13 @@ int main()
     
     frame_timer.start();
 #endif
-
-    //TODO: send a reference to the correct grid to the window logic
-    // at the end of handle_physics, and then call this function within handle_
-    // physics instead of out here.
-    reset_grid();
     
     // end the current frame 
     // things are not drawn directly to the window, but to a hidden buffer. This buffer is then copied to the window when you call .display() -- this is called double-buffering.
     window.display();
   }
 
-  cleanup_game();
+  // cleanup_game();
 
   return 0;
 }

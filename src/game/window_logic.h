@@ -11,6 +11,7 @@
 const sf::Color BACKGROUND_COLOR = sf::Color(50, 50, 50);
 const sf::Color DEFAULT_BLOCK_COLOR = sf::Color::Black;
 const sf::Color SAND_COLOR = sf::Color::Yellow;
+const sf::Color WATER_COLOR = sf::Color::Blue;
 
 
 /* Classes */

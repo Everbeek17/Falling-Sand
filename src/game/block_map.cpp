@@ -76,7 +76,7 @@ sf::FloatRect BlockMap::get_bounding_box() {
   return bounds;
 }
 
-// Overriden draw function
+// Overridden draw function
 void BlockMap::draw(sf::RenderTarget& target, sf::RenderStates states) const {
   // apply the transform
   states.transform *= getTransform();

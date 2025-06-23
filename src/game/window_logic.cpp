@@ -80,6 +80,9 @@ void draw_particles(sf::RenderWindow& window)
       {
         case ParticleType::SAND:
           block_map.set_block_color({x_idx, y_idx}, SAND_COLOR);
+          break;
+        case ParticleType::WATER:
+          block_map.set_block_color({x_idx, y_idx}, WATER_COLOR);
         break;
         default:
           // block_map.set_block_color({x_idx, y_idx}, DEFAULT_BLOCK_COLOR);
